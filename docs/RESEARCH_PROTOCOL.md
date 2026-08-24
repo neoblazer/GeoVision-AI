@@ -86,3 +86,20 @@ before publishable accuracy evaluation, but does not block local runner work.
 Mission Memory, persistent reconciliation, events, standalone camera-motion
 estimation, depth, distance, segmentation, dashboard, replay, scheduling, and
 LLM reporting remain outside Milestone 1.
+
+## Milestone 1B verified vision runtime
+
+The local compatibility target is an NVIDIA GeForce RTX 3050 Laptop GPU with
+4 GiB VRAM and compute capability 8.6. Torch reported CUDA availability, and a
+small FP16 CUDA matrix multiplication passed. Its peak allocated CUDA memory
+was 8,912,896 bytes. That measurement is neither detector memory usage nor a
+performance benchmark and must not be reported as either.
+
+ByteTrack and BoT-SORT both consumed externally supplied deterministic
+detections over two synthetic frames. BoT-SORT used native `sparseOptFlow` GMC
+with ReID disabled. No model or dataset was used in this compatibility
+validation.
+
+`hardware_confirmed` remains false until YOLO11n and YOLO26n both pass
+controlled 640 x 640 FP16 smoke tests on the target GPU. Their model-weight
+hashes also remain unresolved, so benchmark execution continues to fail closed.

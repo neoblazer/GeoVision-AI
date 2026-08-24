@@ -11,7 +11,7 @@ requires-python = ">=3.11,<3.13"
 dependencies = [
   "fastapi>=0.116,<1",
   "numpy>=1.26,<3",
-  "opencv-python-headless>=4.11,<5",
+  "opencv-python==4.14.0.94",
   "pydantic>=2.11,<3",
   "pyyaml>=6,<7",
   "uvicorn[standard]>=0.35,<1",
@@ -24,7 +24,10 @@ dev = [
   "ruff>=0.12,<1",
 ]
 vision = [
-  "ultralytics>=8.3,<9",
+  "torch==2.13.0",
+  "torchvision==0.28.0",
+  "ultralytics==8.4.127",
+  "lap==0.5.12",
 ]
 
 [tool.hatch.build.targets.wheel]

@@ -6,7 +6,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[1]
 FORBIDDEN_DIRS = {".venv", "venv", "node_modules", "__pycache__", "datasets", "models"}
 FORBIDDEN_SUFFIXES = {".pt", ".pth", ".onnx", ".engine", ".pyc"}

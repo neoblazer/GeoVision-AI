@@ -70,3 +70,17 @@ Metric3D may exist only as a small standalone experiment and is not integrated
 into the live pipeline without separate approval. MoGe-2 remains excluded from
 live use after measuring approximately 400-1200+ ms per frame on the target RTX
 3050 Laptop GPU. Depth, distance, and segmentation are outside Milestone 1.
+
+## ADR-008: Milestone 1 Windows vision runtime
+
+- The verified Windows and Python 3.11 vision stack is Torch 2.13.0+cu130,
+  TorchVision 0.28.0+cu130, the CUDA 13.0 runtime bundled with the PyTorch
+  wheel, Ultralytics 8.4.127, LAP 0.5.12, and OpenCV 4.14.0.94.
+- The CUDA 13.0 runtime is supplied by the PyTorch wheel. GeoVision does not
+  require a separately installed CUDA Toolkit for this runtime.
+- Regular `opencv-python` replaces `opencv-python-headless` because the pinned
+  Ultralytics distribution explicitly requires regular OpenCV. The two OpenCV
+  distributions must never coexist in one environment.
+- Future GeoVision tracker adapters isolate the pinned Ultralytics tracker
+  internals because those internal APIs are version-sensitive.
+- No depth-estimation dependency belongs to Milestone 1.
