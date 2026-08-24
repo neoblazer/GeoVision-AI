@@ -31,7 +31,7 @@ class Settings(BaseModel):
     segmentation_enabled: bool = False
 
     @classmethod
-    def from_environment(cls) -> "Settings":
+    def from_environment(cls) -> Settings:
         """Load the small supported environment surface without hidden magic."""
 
         def env(name: str, default: str) -> str:
@@ -62,4 +62,3 @@ def get_settings() -> Settings:
     """Return one immutable settings object per process."""
 
     return Settings.from_environment()
-

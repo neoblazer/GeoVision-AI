@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from typing import Any, Sequence
+from collections.abc import Sequence
+from typing import Any
 
 from geovision.domain.models import BoundingBox, Detection, FrameRef, TrackObservation
 
@@ -55,4 +56,3 @@ class MockTracker:
 
     def reset(self) -> None:
         self._track_id = 1
-

@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from typing import Any, Protocol, Sequence
+from collections.abc import Sequence
+from typing import Any, Protocol
 
 from geovision.domain.models import Detection, FrameRef, TrackObservation
 
@@ -26,4 +27,3 @@ class Tracker(Protocol):
     ) -> Sequence[TrackObservation]: ...
 
     def reset(self) -> None: ...
-
