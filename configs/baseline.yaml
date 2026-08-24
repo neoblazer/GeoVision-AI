@@ -1,0 +1,14 @@
+experiment_id: baseline-yolo11n-bytetrack
+detector:
+  backend: ultralytics
+  model: yolo11n.pt
+  image_size: 640
+  confidence: 0.35
+tracker:
+  backend: bytetrack
+  reid: false
+services:
+  depth: false
+  segmentation: false
+  mission_memory: false
+

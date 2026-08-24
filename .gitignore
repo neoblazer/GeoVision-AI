@@ -1,0 +1,36 @@
+.env
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+
+# Large/local assets
+data/
+datasets/
+models/
+weights/
+outputs/
+runs/
+*.pt
+*.pth
+*.onnx
+*.engine
+
+# Frontend
+node_modules/
+frontend/dist/
+
+# Editors and OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+

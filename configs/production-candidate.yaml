@@ -1,0 +1,15 @@
+experiment_id: candidate-yolo26n-botsort
+detector:
+  backend: ultralytics
+  model: yolo26n.pt
+  image_size: 640
+  confidence: 0.35
+tracker:
+  backend: botsort
+  gmc_method: sparseOptFlow
+  reid: false
+services:
+  depth: false
+  segmentation: false
+  mission_memory: true
+

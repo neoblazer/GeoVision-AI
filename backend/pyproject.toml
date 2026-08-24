@@ -1,0 +1,42 @@
+[build-system]
+requires = ["hatchling>=1.27,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "geovision-backend"
+version = "0.1.0"
+description = "Research-first backend for GeoVision AI"
+readme = "README.md"
+requires-python = ">=3.11,<3.13"
+dependencies = [
+  "fastapi>=0.116,<1",
+  "numpy>=1.26,<3",
+  "opencv-python-headless>=4.11,<5",
+  "pydantic>=2.11,<3",
+  "pyyaml>=6,<7",
+  "uvicorn[standard]>=0.35,<1",
+]
+
+[project.optional-dependencies]
+dev = [
+  "httpx>=0.28,<1",
+  "pytest>=8.4,<9",
+  "ruff>=0.12,<1",
+]
+vision = [
+  "ultralytics>=8.3,<9",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/geovision"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
