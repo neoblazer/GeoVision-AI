@@ -103,3 +103,25 @@ validation.
 `hardware_confirmed` remains false until YOLO11n and YOLO26n both pass
 controlled 640 x 640 FP16 smoke tests on the target GPU. Their model-weight
 hashes also remain unresolved, so benchmark execution continues to fail closed.
+
+## Milestone 1C YOLO11n checkpoint compatibility evidence
+
+The verified `yolo11n.pt` checkpoint came from the official Ultralytics v8.3.0
+asset at
+`https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11n.pt`.
+Its canonical SHA-256 is
+`0ebbc80d4a7680d14987a577cd21342b65ecfd94632bd9a8da63ae6417644ee1`,
+and its exact size is 5,613,764 bytes. The checkpoint remains outside Git under
+`%LOCALAPPDATA%\GeoVision-AI\models\ultralytics\v8.3.0`.
+
+Ultralytics 8.4.127 loaded the `yolo11n.yaml` detection model with 2,624,080
+parameters and 80 COCO classes using Torch 2.13.0+cu130, TorchVision
+0.28.0+cu130, and the CUDA 13.0 runtime. A batch-one, 640 x 640 synthetic-input
+FP16 CUDA compatibility smoke completed three warm-up calls and five smoke
+calls without CUDA OOM or CPU fallback. Peak allocated memory was 51,166,720
+bytes and peak reserved memory was 69,206,016 bytes. Zero detections were
+expected because the synthetic input contained no scene objects.
+
+This was a compatibility test, not an accuracy evaluation or publishable
+performance benchmark. Hardware remains unconfirmed until YOLO26n also passes
+its controlled smoke test.

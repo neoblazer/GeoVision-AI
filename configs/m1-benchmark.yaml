@@ -14,7 +14,7 @@ detectors:
   - profile_id: yolo11n
     backend: ultralytics
     model: yolo11n.pt
-    weights_sha256: null
+    weights_sha256: 0ebbc80d4a7680d14987a577cd21342b65ecfd94632bd9a8da63ae6417644ee1
     image_size: 640
     confidence: 0.35
   - profile_id: yolo26n

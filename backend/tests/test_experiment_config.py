@@ -87,16 +87,22 @@ class ExperimentConfigTests(unittest.TestCase):
 
     def test_draft_is_inspectable_but_not_execution_ready(self) -> None:
         readiness = self.config.execution_readiness()
+        detector_by_id = {detector.profile_id: detector for detector in self.config.detectors}
 
         self.assertEqual(self.config.runtime.ultralytics_version, "8.4.127")
         self.assertEqual(self.config.runtime.torch_version, "2.13.0+cu130")
         self.assertEqual(self.config.runtime.cuda_version, "13.0")
+        self.assertFalse(self.config.runtime.hardware_confirmed)
+        self.assertEqual(
+            detector_by_id["yolo11n"].weights_sha256,
+            "0ebbc80d4a7680d14987a577cd21342b65ecfd94632bd9a8da63ae6417644ee1",
+        )
+        self.assertIsNone(detector_by_id["yolo26n"].weights_sha256)
         self.assertEqual(readiness.status, ReadinessStatus.BLOCKED)
         self.assertEqual(
             readiness.unresolved_fields,
             (
                 "runtime.hardware_confirmed",
-                "detectors.yolo11n.weights_sha256",
                 "detectors.yolo26n.weights_sha256",
             ),
         )
