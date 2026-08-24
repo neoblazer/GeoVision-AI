@@ -54,3 +54,35 @@ sequences and report final results on held-out sequences. Derived event labels
 must be versioned separately from model inputs and must never be used for model
 training.
 
+## Milestone 1 perception protocol
+
+The four required detector/tracker results are generated from two detector
+passes over an immutable recorded file. YOLO11n runs once and its normalized
+detections are replayed through ByteTrack and BoT-SORT. YOLO26n then follows the
+same procedure. BoT-SORT uses native `sparseOptFlow` GMC and ReID remains
+disabled. Webcam and RTSP sources are live-smoke inputs, not comparative matrix
+sources.
+
+YAML owns all experiment-affecting settings. Application `Settings` do not
+configure benchmark experiments, and future CLI or environment inputs are
+limited to operational paths and secrets. The resolved configuration must be
+immutable, reject unknown fields, and serialize deterministically.
+
+The first 30 processed frames are warm-up frames by default; the value remains
+explicit and configurable. A new publishable performance run executes each
+detector and creates fresh caches bound to that run. An interrupted run may
+resume its own cache. A cache from another run may be used for development, but
+the resulting run is non-publishable unless a fresh detector pass and detector
+timings belong to the current run.
+
+Detection caches use versioned JSONL and experiment manifests use versioned
+JSON. MOT export uses one-based frame numbers, positive run-local remapped track
+IDs, and one-based top-left coordinates. Exact dependency versions, model
+weight hashes, and hardware settings must be explicit before execution
+readiness is granted; unresolved draft configurations remain inspectable but
+cannot authorize a benchmark run. The public UAV dataset must be selected
+before publishable accuracy evaluation, but does not block local runner work.
+
+Mission Memory, persistent reconciliation, events, standalone camera-motion
+estimation, depth, distance, segmentation, dashboard, replay, scheduling, and
+LLM reporting remain outside Milestone 1.

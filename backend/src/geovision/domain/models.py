@@ -30,7 +30,7 @@ class BoundingBox(DomainModel):
     y2: float
 
     @model_validator(mode="after")
-    def validate_order(self) -> "BoundingBox":
+    def validate_order(self) -> BoundingBox:
         if self.x2 <= self.x1 or self.y2 <= self.y1:
             raise ValueError("bounding box must have positive width and height")
         return self
@@ -86,7 +86,7 @@ class DistanceEstimate(DomainModel):
     warning: str | None = None
 
     @model_validator(mode="after")
-    def validate_availability(self) -> "DistanceEstimate":
+    def validate_availability(self) -> DistanceEstimate:
         if self.source == DistanceSource.UNAVAILABLE and self.distance_m is not None:
             raise ValueError("unavailable distance cannot contain a metric value")
         return self
@@ -104,7 +104,7 @@ class MissionEntity(DomainModel):
     last_known_footpoint: tuple[float, float]
 
     @model_validator(mode="after")
-    def validate_timeline(self) -> "MissionEntity":
+    def validate_timeline(self) -> MissionEntity:
         if self.last_seen_s < self.first_seen_s:
             raise ValueError("last_seen_s cannot precede first_seen_s")
         if not self.track_ids:
@@ -139,7 +139,7 @@ class MissionEvent(DomainModel):
     evidence_frame_ids: tuple[int, ...]
 
     @model_validator(mode="after")
-    def validate_event_timeline(self) -> "MissionEvent":
+    def validate_event_timeline(self) -> MissionEvent:
         if self.confirmed_at_s < self.started_at_s:
             raise ValueError("confirmed_at_s cannot precede started_at_s")
         if not self.evidence_frame_ids:
@@ -152,3 +152,10 @@ class PipelineResult(DomainModel):
     detections: tuple[Detection, ...]
     tracks: tuple[TrackObservation, ...]
 
+    @model_validator(mode="after")
+    def validate_frame_consistency(self) -> PipelineResult:
+        if any(detection.frame != self.frame for detection in self.detections):
+            raise ValueError("every detection must reference the PipelineResult frame")
+        if any(track.frame != self.frame for track in self.tracks):
+            raise ValueError("every track must reference the PipelineResult frame")
+        return self

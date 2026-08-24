@@ -1,5 +1,19 @@
 """Stable data contracts shared across GeoVision services."""
 
+from geovision.domain.benchmark import (
+    ArtifactSchemaIdentifiers,
+    DeferredServices,
+    DetectorProfile,
+    ExperimentReadiness,
+    M1ExperimentConfig,
+    MeasurementPolicy,
+    ReadinessStatus,
+    ResolvedCombination,
+    RuntimeProfile,
+    SourceProfile,
+    SourceType,
+    TrackerProfile,
+)
 from geovision.domain.models import (
     AssociationDecision,
     BoundingBox,
@@ -15,14 +29,25 @@ from geovision.domain.models import (
 
 __all__ = [
     "AssociationDecision",
+    "ArtifactSchemaIdentifiers",
     "BoundingBox",
+    "DeferredServices",
     "Detection",
+    "DetectorProfile",
     "DistanceEstimate",
+    "ExperimentReadiness",
     "FrameRef",
+    "M1ExperimentConfig",
+    "MeasurementPolicy",
     "MissionEntity",
     "MissionEvent",
     "MotionEstimate",
     "PipelineResult",
+    "ReadinessStatus",
+    "ResolvedCombination",
+    "RuntimeProfile",
+    "SourceProfile",
+    "SourceType",
     "TrackObservation",
+    "TrackerProfile",
 ]
-

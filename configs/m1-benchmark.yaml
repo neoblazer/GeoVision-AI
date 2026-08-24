@@ -1,0 +1,60 @@
+schema_version: geovision.m1-experiment/v1
+experiment_id: m1-reproducible-perception-baseline
+sources:
+  - source_id: recorded-file
+    source_type: file
+    comparative: true
+  - source_id: webcam-smoke
+    source_type: webcam
+    comparative: false
+  - source_id: rtsp-smoke
+    source_type: rtsp
+    comparative: false
+detectors:
+  - profile_id: yolo11n
+    backend: ultralytics
+    model: yolo11n.pt
+    weights_sha256: null
+    image_size: 640
+    confidence: 0.35
+  - profile_id: yolo26n
+    backend: ultralytics
+    model: yolo26n.pt
+    weights_sha256: null
+    image_size: 640
+    confidence: 0.35
+tracker_profile_files:
+  - trackers/bytetrack-m1.yaml
+  - trackers/botsort-m1.yaml
+runtime:
+  python_version: "3.11"
+  ultralytics_version: null
+  torch_version: null
+  cuda_version: null
+  device: cuda:0
+  batch_size: 1
+  fp16: true
+  hardware_confirmed: false
+measurement:
+  warmup_frames: 30
+  fresh_detector_pass_required_for_publishable_run: true
+  same_run_resume_cache_allowed: true
+  cross_run_cache_allowed_for_development: true
+  cross_run_cache_publishable: false
+artifacts:
+  detection_cache: geovision.detection-cache/v1
+  experiment_manifest: geovision.experiment-manifest/v1
+  mot_sidecar: geovision.mot-sidecar/v1
+  detection_cache_format: jsonl
+  manifest_format: json
+services:
+  camera_motion_service: false
+  depth: false
+  distance: false
+  segmentation: false
+  mission_memory: false
+  events: false
+  dashboard: false
+  replay: false
+  scheduling: false
+  llm_reporting: false

@@ -1,0 +1,4 @@
+profile_id: botsort-sparse-optical-flow
+backend: botsort
+gmc_method: sparseOptFlow
+reid: false
