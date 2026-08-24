@@ -1,12 +1,60 @@
 # Research Protocol
 
-## Primary hypothesis
+## Finalized research question
 
-A camera-motion-aware, reliability-adaptive Mission Memory reduces duplicate
-entity reports and false mission alerts under camera motion and track
-fragmentation while retaining practical throughput on a 4 GB laptop GPU.
+> On a resource-constrained RGB UAV platform, does mission-scoped persistent
+> entity reconciliation combined with a deterministic evidence-backed Event
+> Engine improve entity continuity, suppress duplicate reports, and produce more
+> traceable border-surveillance and SAR alerts than ordinary frame-level or
+> transient-track reporting, without exceeding practical latency and memory
+> limits?
+
+The primary novelty is **Persistent Mission-Oriented Intelligence with
+evidence-backed event reasoning for resource-constrained UAV border
+surveillance and search-and-rescue missions.** Persistent Mission Entities,
+Mission Memory, and the deterministic Event Engine form the primary research
+contribution. Adaptive model or frame scheduling is only a supporting resource
+optimization.
+
+The earlier hypothesis framing was that a camera-motion-aware,
+reliability-adaptive Mission Memory reduces duplicate entity reports and false
+mission alerts under camera motion and track fragmentation while retaining
+practical throughput on a 4 GB laptop GPU. The finalized question expands this
+historical framing to both mission modes, evidence traceability, and an explicit
+Event Engine comparison.
+
+## Proposed hypotheses
+
+These hypotheses are not pre-registered or locked. They become locked only
+after metric definitions, acceptance thresholds, dataset versions, split
+manifests, exclusion rules, and statistical procedures are finalized before
+evaluated test results are inspected. No threshold is implied by this draft.
+
+- **H1 - Entity continuity:** mission-scoped reconciliation improves
+  Unique-Entity Recall and reconciliation/continuity accuracy relative to
+  transient-track reporting while keeping False Merge Rate within a declared
+  acceptance bound.
+- **H2 - Duplicate suppression:** entity-based reporting reduces Duplicate
+  Report Rate and duplicate-alert rate without increasing missed-event rate.
+- **H3 - Event quality:** deterministic, mission-specific reasoning reduces
+  false alerts and duplicate alerts while preserving or improving event recall
+  compared with frame-level or transient-track rules.
+- **H4 - Evidence quality:** reason-coded evidence packets improve evidence
+  completeness and end-to-end traceability from an alert to its source frames,
+  observations, entity associations, rule version, and configuration/model
+  provenance.
+- **H5 - Operational latency:** persistence and event reasoning retain practical
+  time-to-alert and do not exceed the declared latency, RAM, or VRAM limits of
+  the target laptop.
+- **H6 - SAR continuity:** mission-scoped entities improve continuity of a SAR
+  subject's last-known valid location and suppress duplicate-victim reports
+  without treating a possible-distress cue as a medical diagnosis.
 
 ## Required baselines
+
+These are required for the completed research evaluation; the Mission Memory
+baselines and real perception runs are planned and are not currently
+implemented.
 
 1. YOLO11n + ByteTrack.
 2. YOLO11n + BoT-SORT.
@@ -22,7 +70,7 @@ only changed independent variable.
 
 - Without camera-motion compensation.
 - Fixed cue weights instead of reliability-aware weights.
-- Without appearance cue.
+- Without appearance cue, only in a separately gated ReID/appearance ablation.
 - Without event hysteresis.
 - Without long-term reconciliation.
 
@@ -38,30 +86,104 @@ only changed independent variable.
 
 ## Mission metrics
 
+- Unique-Entity Recall.
 - Duplicate Report Rate.
 - False Merge Rate.
 - Missed Entity Rate.
 - Correct Reacquisition Rate.
+- Reconciliation/continuity accuracy.
 - Entity Count Error.
 - Event precision, recall, and F1.
 - False alerts per minute during camera-motion segments.
-- Alert latency.
+- Duplicate-alert rate and missed-event rate.
+- Evidence completeness and source-to-alert traceability.
+- Time-to-alert.
+- SAR last-known-location continuity.
+- SAR duplicate-victim suppression.
+
+Every metric requires a versioned operational definition, numerator,
+denominator, unit, aggregation rule, and handling rule for unavailable data
+before final evaluation. Resource feasibility includes end-to-end latency,
+throughput, delivered FPS, peak RAM, and peak VRAM under the declared sequential,
+batch-one experiment protocol. Compatibility-smoke timings are excluded.
+
+Evidence completeness measures the presence of required reason codes and
+evidence references, not confidence alone. Detection confidence and event
+confidence are evaluated and stored separately. Event state is evaluated
+separately from the later operator-alert state and human actions.
 
 ## Data
 
-Use public, identity-annotated UAV sequences. Tune thresholds on development
-sequences and report final results on held-out sequences. Derived event labels
-must be versioned separately from model inputs and must never be used for model
-training.
+Use public, identity-annotated UAV sequences. Split data by sequence, flight,
+site, or mission so correlated frames from one continuous capture cannot appear
+across development and held-out evaluation partitions. Random frame-level
+splits are prohibited. Tune thresholds on development sequences and report
+final results on held-out sequences. Derived event labels must be versioned
+separately from model inputs and must never be used for model training.
+
+Border-surveillance and SAR evaluation must report their mission-specific data,
+rules, annotations, and failure modes separately as well as any justified
+aggregate. Authorization labels must come from documented mission/access-control
+inputs or explicit operator annotations and must not be inferred from
+appearance.
+
+Visible-weapon cue evaluation is a separate gated study, not part of the
+primary research contribution. It requires suitable held-out public data,
+precision/recall measurement, and mission-relevant false-positive and
+false-negative analysis before integration. Existing YOLO11n and YOLO26n COCO
+checkpoints are not firearm detectors.
+
+## Evidence and safety protocol
+
+Every evaluated reconciliation, event, and candidate alert must retain
+machine-readable reason codes and evidence references. Confidence alone is
+insufficient. Evidence must preserve the mission/source/frame context,
+transient TrackKeys, Persistent Mission Entity hypothesis, applicable rule and
+version, uncertainty, and configuration/model provenance needed for replay.
+
+Persistent Mission Entities are operational continuity hypotheses, not
+biometric, civil, or confirmed real-world identities. Mission authorization
+status uses `authorized`, `unauthorized`, or `unknown`, defaults to `unknown`,
+and changes only through an authenticated mission input, documented
+access-control input, or explicit authorized-operator action.
+
+Mission authorization status, ally/enemy status, hostility, nationality, and
+intent must never be inferred from a face, clothing, ethnicity, religion,
+gender, another protected characteristic, or general appearance. Behavior may
+contribute to a documented event such as loitering or zone crossing, but it must
+not determine nationality, identity, ally/enemy status, or authorization.
+`unauthorized` never means enemy.
+
+Mission events and operator alerts have separate states. Candidate alerts
+require human review; acknowledgement, dismissal, escalation, and resolution
+remain authenticated operator actions. GeoVision AI must never autonomously
+recommend, select, or execute force or lethal action. Human review of evidence
+does not authorize the system to recommend force.
+
+## Prohibited research claims
+
+- YOLO11n or YOLO26n detects firearms.
+- Concealed-weapon detection or visible weapon confirmation without separately
+  validated cue evidence.
+- Inferring ally/enemy status, authorization, hostility, nationality, or intent
+  from protected characteristics or general appearance.
+- A Persistent Mission Entity is a confirmed biometric, civil, or real-world
+  identity.
+- Possible distress constitutes a medical diagnosis.
+- Metric distance or location is valid without calibration, reference-frame,
+  uncertainty, and provenance evidence.
+- Compatibility-smoke timings are publishable benchmark results.
+- Deferred or planned capabilities are already implemented.
+- Autonomous recommendation, selection, or execution of force or lethal action.
 
 ## Milestone 1 perception protocol
 
-The four required detector/tracker results are generated from two detector
-passes over an immutable recorded file. YOLO11n runs once and its normalized
-detections are replayed through ByteTrack and BoT-SORT. YOLO26n then follows the
-same procedure. BoT-SORT uses native `sparseOptFlow` GMC and ReID remains
-disabled. Webcam and RTSP sources are live-smoke inputs, not comparative matrix
-sources.
+The four required detector/tracker results will be generated from two detector
+passes over an immutable recorded file. YOLO11n will run once and its normalized
+detections will be replayed through ByteTrack and BoT-SORT. YOLO26n will then
+follow the same procedure. BoT-SORT uses native `sparseOptFlow` GMC and ReID
+remains disabled. Future webcam and RTSP sources are classified as live-smoke
+inputs, not comparative matrix sources.
 
 YAML owns all experiment-affecting settings. Application `Settings` do not
 configure benchmark experiments, and future CLI or environment inputs are
@@ -100,9 +222,12 @@ detections over two synthetic frames. BoT-SORT used native `sparseOptFlow` GMC
 with ReID disabled. No model or dataset was used in this compatibility
 validation.
 
-`hardware_confirmed` remains false until YOLO11n and YOLO26n both pass
-controlled 640 x 640 FP16 smoke tests on the target GPU. Their model-weight
-hashes also remain unresolved, so benchmark execution continues to fail closed.
+At the Milestone 1B checkpoint, `hardware_confirmed` remained false until
+YOLO11n and YOLO26n could both pass controlled 640 x 640 FP16 smoke tests on the
+target GPU. Historically, both model-weight hashes were unresolved at that
+checkpoint, so benchmark execution failed closed. The later Milestone 1C record
+below verifies YOLO11n; YOLO26n and final hardware confirmation remain
+unresolved.
 
 ## Milestone 1C YOLO11n checkpoint compatibility evidence
 

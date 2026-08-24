@@ -84,3 +84,90 @@ live use after measuring approximately 400-1200+ ms per frame on the target RTX
 - Future GeoVision tracker adapters isolate the pinned Ultralytics tracker
   internals because those internal APIs are version-sensitive.
 - No depth-estimation dependency belongs to Milestone 1.
+
+## ADR-009: Dual mission scope
+
+GeoVision supports two mission modes: `border_surveillance` and
+`search_and_rescue`. Both use the same evidence and provenance foundations but
+have separately defined rules, evaluation data, and operator interpretation.
+Mission context is established before perception processing so observations,
+entities, events, and alerts cannot silently cross mission boundaries.
+
+The primary novelty is **Persistent Mission-Oriented Intelligence with
+evidence-backed event reasoning for resource-constrained UAV border
+surveillance and search-and-rescue missions.**
+
+## ADR-010: Non-lethal human-in-the-loop operation
+
+GeoVision is a non-lethal decision-support and evidence-reporting platform. It
+may produce reason-coded mission events and candidate alerts, but an authorized
+human reviews, interprets, acknowledges, dismisses, or escalates them. The
+system never makes an autonomous hostile classification. GeoVision AI must
+never autonomously recommend, select, or execute force or lethal action. Human
+review of evidence does not authorize the system to recommend force.
+
+## ADR-011: Mission authorization semantics
+
+Mission authorization has three states: `authorized`, `unauthorized`, and
+`unknown`; the default is `unknown`. The state may change only through an
+authenticated mission input, documented access-control input, or explicit
+authorized-operator action, with scope and provenance retained.
+
+Mission authorization status, ally/enemy status, hostility, nationality, and
+intent are never inferred from a face, clothing, ethnicity, religion, gender,
+another protected characteristic, or general appearance. Behavior may
+contribute to a documented event such as loitering or zone crossing, but it
+must not determine nationality, identity, ally/enemy status, or authorization.
+
+`unauthorized` means that permission for the relevant mission or zone is absent
+or not established; it does not mean enemy or hostile and does not authorize
+force.
+
+## ADR-012: Persistent entities are operational hypotheses
+
+A Persistent Mission Entity is a mission-scoped, evidence-backed hypothesis
+that observations belong to one continuing operational entity. It is not a
+biometric identity, civil identity, or confirmed real-world identity.
+
+Transient tracker identifiers are eventually represented by source-qualified
+and tracker-instance-qualified TrackKeys. Mission Memory owns persistent entity
+identifiers and must preserve reconciliation evidence, uncertainty, reason
+codes, and provenance rather than promoting a bare tracker ID to an identity.
+
+## ADR-013: Evidence-backed alerts and operator responsibility
+
+Deterministic mission events, immutable evidence packets, and operator alerts
+have distinct lifecycles. Evidence packets reference observations, entities,
+rules, reason codes, uncertainty, and model/configuration provenance. Detection
+confidence and event confidence remain separate, and confidence alone is
+insufficient to issue or justify an alert.
+
+Candidate alerts require human review. Alert transitions record the authorized
+actor, timestamp, reason, and evidence version without rewriting the underlying
+event. Operational interpretation and response remain the operator's
+responsibility.
+
+## ADR-014: Visible-weapon cues are separately gated
+
+A visible-weapon cue detector is a planned, separately gated final-product
+capability. It must be independently selected, implemented, and validated before
+operational use. The current COCO YOLO11n and YOLO26n baselines must not be
+described as firearm detectors.
+
+A visible-weapon cue is evidence for operator review, not autonomous
+confirmation of hostility or intent. Evaluation requires suitable held-out
+public data, precision/recall reporting, and mission-relevant failure analysis
+before integration. Concealed-weapon claims and automatic hostile or force
+recommendations are prohibited.
+
+## ADR-015: Metric distance and location fail unavailable
+
+The existing `DepthService -> DistanceService -> FusionService` separation is
+preserved, and backend selection remains separately gated. Metric distance or
+location may be emitted only when calibration, scale, geometry, reference frame,
+and provenance establish its validity.
+
+When metric validity cannot be established, the result is explicitly
+`unavailable` with a machine-readable reason and uncertainty metadata. Relative
+depth, image coordinates, stale estimates, or assumptions must not be presented
+as validated metric distance or location.
