@@ -85,19 +85,34 @@ class ExperimentConfigTests(unittest.TestCase):
         with self.assertRaises(ValidationError):
             M1ExperimentConfig.model_validate(data)
 
-    def test_draft_is_inspectable_but_not_execution_ready(self) -> None:
+    def test_verified_config_is_execution_ready(self) -> None:
         readiness = self.config.execution_readiness()
         detector_by_id = {detector.profile_id: detector for detector in self.config.detectors}
 
         self.assertEqual(self.config.runtime.ultralytics_version, "8.4.127")
         self.assertEqual(self.config.runtime.torch_version, "2.13.0+cu130")
         self.assertEqual(self.config.runtime.cuda_version, "13.0")
-        self.assertFalse(self.config.runtime.hardware_confirmed)
+        self.assertTrue(self.config.runtime.hardware_confirmed)
         self.assertEqual(
             detector_by_id["yolo11n"].weights_sha256,
             "0ebbc80d4a7680d14987a577cd21342b65ecfd94632bd9a8da63ae6417644ee1",
         )
-        self.assertIsNone(detector_by_id["yolo26n"].weights_sha256)
+        self.assertEqual(
+            detector_by_id["yolo26n"].weights_sha256,
+            "9b09cc8bf347f0fc8a5f7657480587f25db09b34bf33b0652110fb03a8ad4fef",
+        )
+        self.assertEqual(readiness.status, ReadinessStatus.READY)
+        self.assertEqual(readiness.unresolved_fields, ())
+        self.assertTrue(readiness.ready)
+        self.config.require_execution_ready()
+
+    def test_deliberately_unresolved_copy_fails_closed(self) -> None:
+        data = self.config_data()
+        data["runtime"]["hardware_confirmed"] = False  # type: ignore[index]
+        data["detectors"][1]["weights_sha256"] = None  # type: ignore[index]
+        unresolved_config = M1ExperimentConfig.model_validate(data)
+        readiness = unresolved_config.execution_readiness()
+
         self.assertEqual(readiness.status, ReadinessStatus.BLOCKED)
         self.assertEqual(
             readiness.unresolved_fields,
@@ -106,25 +121,9 @@ class ExperimentConfigTests(unittest.TestCase):
                 "detectors.yolo26n.weights_sha256",
             ),
         )
+        self.assertFalse(readiness.ready)
         with self.assertRaises(ValueError):
-            self.config.require_execution_ready()
-
-    def test_synthetic_confirmed_provenance_becomes_execution_ready(self) -> None:
-        data = self.config_data()
-        data["runtime"].update(  # type: ignore[union-attr]
-            {
-                "ultralytics_version": "synthetic-ultralytics-version",
-                "torch_version": "synthetic-torch-version",
-                "cuda_version": "synthetic-cuda-version",
-                "hardware_confirmed": True,
-            }
-        )
-        data["detectors"][0]["weights_sha256"] = "a" * 64  # type: ignore[index]
-        data["detectors"][1]["weights_sha256"] = "b" * 64  # type: ignore[index]
-        ready_config = M1ExperimentConfig.model_validate(data)
-
-        self.assertTrue(ready_config.execution_readiness().ready)
-        ready_config.require_execution_ready()
+            unresolved_config.require_execution_ready()
 
     def test_environment_and_application_settings_do_not_change_semantics(self) -> None:
         expected = self.config.canonical_json()

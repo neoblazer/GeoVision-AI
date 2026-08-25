@@ -250,3 +250,44 @@ expected because the synthetic input contained no scene objects.
 This was a compatibility test, not an accuracy evaluation or publishable
 performance benchmark. Hardware remains unconfirmed until YOLO26n also passes
 its controlled smoke test.
+
+## Milestone 1C YOLO26n checkpoint compatibility evidence
+
+The verified `yolo26n.pt` checkpoint came from the official Ultralytics assets
+v8.4.0 release at
+`https://github.com/ultralytics/assets/releases/download/v8.4.0/yolo26n.pt`.
+The controlled download redirected to
+`release-assets.githubusercontent.com`. Its canonical SHA-256 is
+`9b09cc8bf347f0fc8a5f7657480587f25db09b34bf33b0652110fb03a8ad4fef`,
+and its exact size is 5,544,453 bytes. The checkpoint remains outside Git under
+`%LOCALAPPDATA%\GeoVision-AI\models\ultralytics\v8.4.0`.
+
+Ultralytics 8.4.127 loaded the checkpoint through the `YOLO` wrapper as a
+`DetectionModel` with architecture `yolo26n.yaml`, scale `n`, detection task,
+2,572,280 parameters, and 80 COCO classes. The runtime used Torch
+2.13.0+cu130, TorchVision 0.28.0+cu130, and the CUDA 13.0 runtime on the RTX
+3050 Laptop GPU with compute capability 8.6. The actual inference device was
+`cuda:0`, the model parameter dtype was FP16, and no CPU fallback occurred.
+
+A deterministic in-memory 640 x 640 BGR array was processed at batch size 1
+for exactly three warm-up calls and five compatibility-smoke calls. Peak
+allocated CUDA memory was 50,759,168 bytes, peak reserved CUDA memory was
+69,206,016 bytes, and allocated memory after the final inference was 38,461,440
+bytes. No CUDA OOM occurred, no timings were collected, and the package
+inventory remained unchanged at 62 packages. All calls produced zero
+detections; that synthetic-input result is not an accuracy result.
+
+The Ultralytics `half` argument emitted a deprecation warning even though FP16
+remained active. The future detector adapter must address that API deprecation
+without silently changing the configured experimental precision. The COCO
+checkpoint is not a firearm detector.
+
+This is compatibility evidence, not benchmark evidence. The CUDA memory values
+are checkpoint-smoke measurements, not full-pipeline memory requirements.
+`hardware_confirmed: true` means only that both configured detector checkpoints
+completed bounded 640 x 640, batch-one FP16 CUDA compatibility smoke validation
+on the declared RTX 3050 Laptop GPU environment. It does not establish
+benchmark performance, dataset accuracy, real-time live-feed performance,
+completed detector/tracker adapters, production readiness, weapon detection,
+depth or distance validity, SAR capability, full-system memory feasibility, or
+simultaneous model residency.
