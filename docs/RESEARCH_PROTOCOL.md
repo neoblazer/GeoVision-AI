@@ -291,3 +291,80 @@ benchmark performance, dataset accuracy, real-time live-feed performance,
 completed detector/tracker adapters, production readiness, weapon detection,
 depth or distance validity, SAR capability, full-system memory feasibility, or
 simultaneous model residency.
+
+## Milestone 1D-A0 locked pre-execution protocol
+
+This section records protocol decisions, not experimental results. No real
+video experiment or accuracy/performance benchmark has run in this phase.
+
+Both YOLO11n and YOLO26n use one shared detector comparison policy: detection
+task, image size 640, confidence floor 0.10, IoU 0.70, maximum 300 detections,
+rectangular inference, all COCO classes, class-aware processing, no
+augmentation, model-native end-to-end behavior, no compilation, and no
+channels-last conversion. Execution remains batch one on CUDA device 0 using
+FP16, with 30 warm-up frames. Checkpoint profile/model pairing, independently
+verified SHA-256 hashes, and independently verified byte sizes are immutable
+configuration inputs.
+
+The 0.10 detector threshold is the cache-input floor needed to retain
+ByteTrack's low-confidence association range. It does not make every
+0.10-confidence observation reportable or acceptable as evidence. Future
+reporting and evaluation thresholds are separate. YOLO26 model-native
+end-to-end processing differs internally from YOLO11 ordinary NMS; both still
+produce the same GeoVision detection contract. IoU is supplied and recorded
+consistently even when the end-to-end implementation does not use ordinary NMS
+IoU identically.
+
+Both trackers receive `track_high_thresh: 0.25`, `track_low_thresh: 0.10`,
+`new_track_thresh: 0.25`, `track_buffer: 30`, `match_thresh: 0.80`, and
+`fuse_score: true`. The buffer is measured in frames without frame-rate
+scaling. ByteTrack has no GMC and no ReID. BoT-SORT requires native
+`sparseOptFlow` GMC, has ReID disabled, and records `proximity_thresh: 0.50`,
+`appearance_thresh: 0.80`, and `model: auto`. Automatic dependency and model
+installation are prohibited.
+
+Comparative recorded-file frame indices are zero-based and contiguous.
+Canonical time is `frame_index / validated_fps`; FPS must be finite and greater
+than zero before inference. OpenCV or source timestamps are diagnostic only.
+They may be unavailable, duplicated, or regressive without replacing canonical
+time, and the future source must record their status. Decode is sequential with
+no seeking, skipping, or retrying. A reported frame count must be a valid
+non-negative integer. EOF is valid only after exactly that many frames decode
+successfully and the next read fails. A failed read before the expected count,
+any mismatch or extra decoded frame, and missing count metadata fail the run;
+without a count, termination is ambiguous. Frames are BGR `uint8` H x W x 3,
+and actual decoded dimensions override unreliable container dimensions. Future
+execution computes source SHA-256 plus byte size before processing and
+decoded-frame SHA-256 for replay identity. Source paths never enter research
+artifacts.
+
+All present persisted floating-point values must be finite. Bounding boxes
+require positive width and height. Frame-bound validation belongs to the future
+adapter, where dimensions are known; out-of-frame boxes are rejected rather
+than silently clamped. Unavailable metric distance remains explicitly
+unavailable and is not substituted with relative depth.
+
+Canonical detections sort by descending confidence, then ascending class ID,
+`x1`, `y1`, `x2`, `y2`, and original detection ordinal. Adapter boundaries
+convert NumPy and Torch scalars to ordinary Python numeric values. Canonical
+artifact JSON preserves full finite floats without arbitrary rounding, uses
+Python 3.11 shortest-round-trip representation, normalizes negative zero to
+`0.0`, and uses UTF-8, sorted keys, compact separators, and
+`allow_nan=False`. Versioned identifiers are locked for frame metadata,
+detection caches, track artifacts, runtime telemetry, the existing experiment
+manifest, failure reports, completion markers, and MOT sidecars. This phase
+implements no artifact writer. The experiment manifest is the one canonical
+manifest artifact with identifier `geovision.experiment-manifest/v1`; “run
+manifest” is a descriptive synonym for it, not a second artifact or schema.
+
+Numerical acceptance thresholds for publishable accuracy and performance
+remain unresolved. Dataset selection and versioned development/held-out split
+manifests also remain unresolved. Recorded-file sources, caches, detector and
+tracker adapters, and the runner are still absent, so these contracts do not
+constitute completed benchmark execution.
+
+If future Phase 1D-D production code imports `psutil`, it must be declared then
+as a direct vision/runtime dependency. No dependency changes occur in this
+phase. Ultralytics package/checkpoint licensing and research-artifact
+publication or distribution obligations require a separate official-source
+review; no licensing conclusion is recorded here.

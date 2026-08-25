@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from math import isfinite
+
+from pydantic import BaseModel, ConfigDict, Field, FiniteFloat, model_validator
 
 from geovision.domain.enums import (
     AssociationOutcome,
@@ -20,19 +22,21 @@ class DomainModel(BaseModel):
 class FrameRef(DomainModel):
     source_id: str = Field(min_length=1)
     frame_id: int = Field(ge=0)
-    timestamp_s: float = Field(ge=0.0)
+    timestamp_s: FiniteFloat = Field(ge=0.0)
 
 
 class BoundingBox(DomainModel):
-    x1: float
-    y1: float
-    x2: float
-    y2: float
+    x1: FiniteFloat
+    y1: FiniteFloat
+    x2: FiniteFloat
+    y2: FiniteFloat
 
     @model_validator(mode="after")
     def validate_order(self) -> BoundingBox:
         if self.x2 <= self.x1 or self.y2 <= self.y1:
             raise ValueError("bounding box must have positive width and height")
+        if not isfinite(self.x2 - self.x1) or not isfinite(self.y2 - self.y1):
+            raise ValueError("bounding box width and height must be finite")
         return self
 
     @property
@@ -45,7 +49,7 @@ class BoundingBox(DomainModel):
 
     @property
     def footpoint(self) -> tuple[float, float]:
-        return ((self.x1 + self.x2) / 2.0, self.y2)
+        return (self.x1 + (self.x2 - self.x1) / 2.0, self.y2)
 
 
 class Detection(DomainModel):
@@ -53,7 +57,7 @@ class Detection(DomainModel):
     frame: FrameRef
     class_id: int = Field(ge=0)
     label: str = Field(min_length=1)
-    confidence: float = Field(ge=0.0, le=1.0)
+    confidence: FiniteFloat = Field(ge=0.0, le=1.0)
     bbox: BoundingBox
 
 
@@ -62,26 +66,36 @@ class TrackObservation(DomainModel):
     frame: FrameRef
     class_id: int = Field(ge=0)
     label: str = Field(min_length=1)
-    confidence: float = Field(ge=0.0, le=1.0)
+    confidence: FiniteFloat = Field(ge=0.0, le=1.0)
     bbox: BoundingBox
     state: TrackState = TrackState.ACTIVE
 
 
 class MotionEstimate(DomainModel):
     frame: FrameRef
-    homography: tuple[float, float, float, float, float, float, float, float, float]
-    confidence: float = Field(ge=0.0, le=1.0)
-    inlier_ratio: float = Field(ge=0.0, le=1.0)
-    residual_px: float = Field(ge=0.0)
+    homography: tuple[
+        FiniteFloat,
+        FiniteFloat,
+        FiniteFloat,
+        FiniteFloat,
+        FiniteFloat,
+        FiniteFloat,
+        FiniteFloat,
+        FiniteFloat,
+        FiniteFloat,
+    ]
+    confidence: FiniteFloat = Field(ge=0.0, le=1.0)
+    inlier_ratio: FiniteFloat = Field(ge=0.0, le=1.0)
+    residual_px: FiniteFloat = Field(ge=0.0)
     reliable: bool
 
 
 class DistanceEstimate(DomainModel):
     track_id: int = Field(ge=0)
     frame: FrameRef
-    distance_m: float | None = Field(default=None, gt=0.0)
+    distance_m: FiniteFloat | None = Field(default=None, gt=0.0)
     source: DistanceSource = DistanceSource.UNAVAILABLE
-    confidence: float = Field(ge=0.0, le=1.0)
+    confidence: FiniteFloat = Field(ge=0.0, le=1.0)
     calibrated: bool = False
     warning: str | None = None
 
@@ -97,11 +111,11 @@ class MissionEntity(DomainModel):
     track_ids: tuple[int, ...]
     class_id: int = Field(ge=0)
     label: str = Field(min_length=1)
-    first_seen_s: float = Field(ge=0.0)
-    last_seen_s: float = Field(ge=0.0)
+    first_seen_s: FiniteFloat = Field(ge=0.0)
+    last_seen_s: FiniteFloat = Field(ge=0.0)
     observation_count: int = Field(ge=1)
     state: EntityState = EntityState.ACTIVE
-    last_known_footpoint: tuple[float, float]
+    last_known_footpoint: tuple[FiniteFloat, FiniteFloat]
 
     @model_validator(mode="after")
     def validate_timeline(self) -> MissionEntity:
@@ -118,13 +132,13 @@ class AssociationDecision(DomainModel):
     candidate_track_id: int = Field(ge=0)
     entity_id: str = Field(min_length=1)
     outcome: AssociationOutcome
-    total_score: float = Field(ge=0.0, le=1.0)
-    motion_score: float = Field(ge=0.0, le=1.0)
-    appearance_score: float | None = Field(default=None, ge=0.0, le=1.0)
-    scale_score: float = Field(ge=0.0, le=1.0)
-    time_score: float = Field(ge=0.0, le=1.0)
-    motion_reliability: float = Field(ge=0.0, le=1.0)
-    appearance_reliability: float = Field(ge=0.0, le=1.0)
+    total_score: FiniteFloat = Field(ge=0.0, le=1.0)
+    motion_score: FiniteFloat = Field(ge=0.0, le=1.0)
+    appearance_score: FiniteFloat | None = Field(default=None, ge=0.0, le=1.0)
+    scale_score: FiniteFloat = Field(ge=0.0, le=1.0)
+    time_score: FiniteFloat = Field(ge=0.0, le=1.0)
+    motion_reliability: FiniteFloat = Field(ge=0.0, le=1.0)
+    appearance_reliability: FiniteFloat = Field(ge=0.0, le=1.0)
     reasons: tuple[str, ...]
 
 
@@ -132,9 +146,9 @@ class MissionEvent(DomainModel):
     event_id: str = Field(min_length=1)
     event_type: EventType
     entity_id: str = Field(min_length=1)
-    started_at_s: float = Field(ge=0.0)
-    confirmed_at_s: float = Field(ge=0.0)
-    confidence: float = Field(ge=0.0, le=1.0)
+    started_at_s: FiniteFloat = Field(ge=0.0)
+    confirmed_at_s: FiniteFloat = Field(ge=0.0)
+    confidence: FiniteFloat = Field(ge=0.0, le=1.0)
     rule_id: str = Field(min_length=1)
     evidence_frame_ids: tuple[int, ...]
 

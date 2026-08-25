@@ -1,4 +1,14 @@
 profile_id: botsort-sparse-optical-flow
 backend: botsort
+track_high_thresh: 0.25
+track_low_thresh: 0.10
+new_track_thresh: 0.25
+track_buffer: 30
+track_buffer_unit: frames
+match_thresh: 0.80
+fuse_score: true
 gmc_method: sparseOptFlow
 reid: false
+proximity_thresh: 0.50
+appearance_thresh: 0.80
+model: auto

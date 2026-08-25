@@ -38,8 +38,9 @@ of evidence does not authorize the system to recommend force.
 - A verified CUDA vision runtime on the target Windows laptop.
 - Direct ByteTrack and BoT-SORT API smoke validation using externally supplied
   synthetic detections; BoT-SORT used `sparseOptFlow` GMC with ReID disabled.
-- Recorded provenance and a controlled compatibility smoke for the YOLO11n
-  checkpoint. This is not an accuracy or publishable performance result.
+- Recorded provenance and controlled compatibility smokes for both the YOLO11n
+  and YOLO26n checkpoints under the bounded 640 x 640, batch-one FP16 CUDA
+  profile. These are not accuracy or publishable performance results.
 
 ### Immediate Milestone 1 work
 
@@ -122,9 +123,10 @@ scripts/            # Repository checks and setup helpers
 
 The clean foundation and Milestone 1 protocol/configuration work are present,
 and the pinned vision runtime dependencies have been introduced and validated.
-YOLO11n checkpoint provenance and GPU compatibility are recorded. YOLO26n
-checkpoint validation and the real detector/tracker adapter implementation are
-still outstanding, so benchmark execution continues to fail closed.
+Both checkpoint provenances and the bounded detector hardware profile are
+verified. This is not full-system or benchmark readiness: real detector and
+tracker adapters, detection caching, recorded-file ingestion, and the
+comparative runner remain unimplemented.
 
 ## Local setup
 

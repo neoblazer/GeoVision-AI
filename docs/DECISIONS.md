@@ -171,3 +171,70 @@ When metric validity cannot be established, the result is explicitly
 `unavailable` with a machine-readable reason and uncertainty metadata. Relative
 depth, image coordinates, stale estimates, or assumptions must not be presented
 as validated metric distance or location.
+
+## ADR-016: Milestone 1 recorded-file execution semantics
+
+- Both detectors share one comparison policy: detection task, image size 640,
+  confidence floor 0.10, IoU 0.70, maximum 300 detections, rectangular
+  inference, all classes, class-aware processing, no augmentation, model-native
+  end-to-end behavior, no compilation, and no channels-last conversion. Batch
+  size 1, FP16, CUDA device 0, and 30 warm-up frames are fixed separately as
+  runtime and measurement semantics.
+- The former 0.35 confidence threshold is replaced by 0.10 because 0.35 removed
+  observations from ByteTrack's configured low-confidence recovery region
+  before the tracker could evaluate them. The 0.10 value is a detector-cache
+  input floor, not a reporting or evidence-acceptance threshold. Reporting and
+  evaluation thresholds remain separate and unresolved.
+- YOLO11 and YOLO26 retain their model-native postprocessing provenance.
+  YOLO26's end-to-end path differs internally from YOLO11's ordinary NMS path,
+  but both must emit the same GeoVision detection contract. The configured IoU
+  value is always supplied and recorded even when an end-to-end path does not
+  apply ordinary NMS IoU identically.
+- ByteTrack and BoT-SORT both use `track_high_thresh: 0.25`,
+  `track_low_thresh: 0.10`, `new_track_thresh: 0.25`, `track_buffer: 30`,
+  `match_thresh: 0.80`, and `fuse_score: true`. `track_buffer` is measured
+  directly in frames without frame-rate scaling. ByteTrack has no GMC or ReID.
+  BoT-SORT requires native `sparseOptFlow` GMC, disables ReID, and retains
+  `proximity_thresh: 0.50`, `appearance_thresh: 0.80`, and `model: auto` as
+  explicit installed-API inputs. Automatic dependency and model installation
+  are prohibited.
+- Comparative recorded files use zero-based contiguous frame indices and
+  canonical time `frame_index / validated_fps`. FPS must be finite and positive
+  before inference. Source timestamps are diagnostic; unavailable, duplicated,
+  or regressive values never replace canonical time and their status must be
+  recorded by the future source implementation. Decode is sequential, with no
+  seeking, skipping, or retrying. A reported frame count is valid only when it
+  is a non-negative integer. EOF is valid only when exactly that many frames
+  decode successfully and the next read fails. A failed read before the count,
+  any count mismatch or extra decoded frame, and missing count metadata all
+  fail the run; missing count makes termination ambiguous.
+- Decoded frames must be BGR `uint8` H x W x 3, with decoded dimensions taking
+  precedence over container metadata. Future execution fingerprints the source
+  file by SHA-256 and byte size and each replayed decoded frame by SHA-256.
+  Research artifacts never contain source paths.
+- Persisted numeric values fail closed on NaN or infinity. Bounding boxes also
+  require positive area. Because frame dimensions are unavailable in the box
+  domain object, future adapters must reject out-of-frame boxes at their
+  boundary rather than silently clamp them. Invalid metric distance remains
+  unavailable and is never converted into relative depth.
+- Canonical detections sort by descending confidence, then ascending class ID,
+  `x1`, `y1`, `x2`, `y2`, and original detection ordinal. Adapters convert
+  NumPy or Torch scalars to Python numeric values. Canonical JSON preserves full
+  finite precision without arbitrary rounding, normalizes negative zero to
+  `0.0`, and uses Python 3.11 shortest-round-trip floats, UTF-8, sorted keys,
+  compact separators, and `allow_nan=False`. These rules and immutable artifact
+  schema identifiers are part of experiment provenance, not benchmark results.
+  The experiment manifest is the sole canonical manifest artifact and retains
+  `geovision.experiment-manifest/v1`; “run manifest” is only a descriptive
+  synonym, not a second artifact or schema.
+
+## ADR-017: Deferred runtime dependency and licensing reviews
+
+If Phase 1D-D production code imports `psutil`, that package must become an
+explicit direct vision/runtime dependency in that phase. It is not added as a
+dependency by this decision-only phase.
+
+Ultralytics package and checkpoint licensing, together with publication and
+distribution obligations for research artifacts, require a separate review of
+official sources before distribution. This ADR records the review gate and
+does not assert a licensing conclusion.

@@ -15,14 +15,25 @@ detectors:
     backend: ultralytics
     model: yolo11n.pt
     weights_sha256: 0ebbc80d4a7680d14987a577cd21342b65ecfd94632bd9a8da63ae6417644ee1
-    image_size: 640
-    confidence: 0.35
+    weights_size_bytes: 5613764
   - profile_id: yolo26n
     backend: ultralytics
     model: yolo26n.pt
     weights_sha256: 9b09cc8bf347f0fc8a5f7657480587f25db09b34bf33b0652110fb03a8ad4fef
-    image_size: 640
-    confidence: 0.35
+    weights_size_bytes: 5544453
+detector_comparison:
+  task: detect
+  image_size: 640
+  confidence: 0.10
+  iou: 0.70
+  max_det: 300
+  rect: true
+  classes: null
+  agnostic_nms: false
+  augment: false
+  end_to_end: model-native
+  compile: false
+  channels_last: false
 tracker_profile_files:
   - trackers/bytetrack-m1.yaml
   - trackers/botsort-m1.yaml
@@ -31,9 +42,11 @@ runtime:
   ultralytics_version: "8.4.127"
   torch_version: "2.13.0+cu130"
   cuda_version: "13.0"
-  device: cuda:0
+  device: 0
   batch_size: 1
   fp16: true
+  automatic_dependency_install: false
+  automatic_model_download: false
   hardware_confirmed: true
 measurement:
   warmup_frames: 30
@@ -42,11 +55,61 @@ measurement:
   cross_run_cache_allowed_for_development: true
   cross_run_cache_publishable: false
 artifacts:
+  frame_metadata: geovision.frame-metadata/v1
   detection_cache: geovision.detection-cache/v1
+  track_artifact: geovision.track-artifact/v1
+  runtime_telemetry: geovision.runtime-telemetry/v1
+  # "Run manifest" is a synonym for this sole experiment-manifest artifact.
   experiment_manifest: geovision.experiment-manifest/v1
+  failure_report: geovision.failure-report/v1
+  completion_marker: geovision.completion-marker/v1
   mot_sidecar: geovision.mot-sidecar/v1
   detection_cache_format: jsonl
   manifest_format: json
+recorded_source:
+  frame_index_origin: 0
+  contiguous_frame_indices: true
+  canonical_timestamp: frame-index-over-validated-fps
+  source_timestamp_role: diagnostic
+  source_timestamp_statuses:
+    - available
+    - unavailable
+    - duplicated
+    - regressive
+  require_finite_positive_fps: true
+  invalid_fps_fails_before_inference: true
+  sequential_decode: true
+  allow_seek: false
+  allow_skip: false
+  allow_retry: false
+  require_reported_frame_count_match: true
+  early_decode_failure: fail-run
+  ambiguous_eof_without_frame_count: fail-run
+  pixel_format: BGR
+  pixel_dtype: uint8
+  channel_layout: HWC
+  channel_count: 3
+  dimension_authority: decoded-frame
+  source_fingerprint: sha256-and-byte-size
+  replay_frame_fingerprint: sha256
+  source_paths_in_artifacts: false
+canonical_artifacts:
+  detection_order:
+    - confidence-desc
+    - class-id-asc
+    - x1-asc
+    - y1-asc
+    - x2-asc
+    - y2-asc
+    - original-ordinal-asc
+  external_scalar_conversion: python-numeric
+  float_representation: python-3.11-shortest-round-trip
+  preserve_full_finite_precision: true
+  normalize_negative_zero: true
+  encoding: utf-8
+  sort_keys: true
+  compact_separators: true
+  allow_nan: false
 services:
   camera_motion_service: false
   depth: false
